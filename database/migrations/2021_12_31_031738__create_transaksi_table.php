@@ -20,7 +20,7 @@ class CreateTransaksiTable extends Migration
             // $table->foreignId('konsumen_id')->references('id')->on('konsumen')->onDelete('cascade');
             $table->string('nama', 100);
             $table->string('no_hp', 20);
-            $table->integer('jml');
+            $table->integer('jml_beli');
             $table->integer('total');
             $table->integer('bayar');
             $table->integer('kembalian');

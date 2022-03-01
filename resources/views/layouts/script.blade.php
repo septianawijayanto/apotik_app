@@ -20,6 +20,9 @@
 <script src="{{ asset('adminlte') }}/plugins/toastr/toastr.min.js"></script>
 
 <script type="text/javascript" src="{{ asset('DataTables/datatables.min.js') }}"></script>
+<!-- Select2 -->
+<script src="{{ asset('adminlte') }}/plugins/select2/js/select2.full.min.js"></script>
+
 
 <!-- AdminLTE for demo purposes -->
 {{-- <script src="{{ asset('adminlte') }}/dist/js/demo.js"></script> --}}

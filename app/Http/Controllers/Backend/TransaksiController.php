@@ -8,6 +8,7 @@ use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Validator;
+use PDF;
 
 class TransaksiController extends Controller
 {
@@ -19,26 +20,28 @@ class TransaksiController extends Controller
     public function index(Request $request)
     {
         $title = 'Transaksi';
-        $produk = Produk::get();
+        $produk = Produk::where('jml', '>', '0')->get();
         $datas = Transaksi::all();
         if ($request->ajax()) {
             return datatables()->of($datas)->addIndexColumn()
                 ->addColumn('action', function ($data) {
-                    $button = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $data->id . '" data-original-title="Edit" class="btn btn-warning btn-xs edit-post"><i class="fas fa-pencil-alt"></i> </a>';
-                    $button .= '&nbsp;&nbsp;';
-                    $button .= '<button type="button" name="delete" id="' . $data->id . '"  class="delete btn btn-danger btn-xs"><i class="fa fa-trash"></i></button>';
+                    $button = ' <a href="/transaksi/kwitansi/' . $data->id . '" class="btn btn-warning btn-xs"><i class="fa fa-print"></i></a>';
                     return $button;
                 })->addColumn('produk', function ($data) {
                     return $data->produk->nama_produk;
-                })->make(true);
+                })->addColumn('kembalian', function ($data) {
+                    return  'Rp. ' . number_format($data->kembalian);
+                })->addColumn('bayar', function ($data) {
+                    return  'Rp. ' . number_format($data->bayar);
+                })
+                ->addColumn('total', function ($data) {
+                    return  'Rp. ' . number_format($data->total);
+                })
+                ->make(true);
         }
         // return response()->json($datas);
         return view('transaksi.index', compact('title', 'produk'));
     }
-    // public function cari(Request $request, $id)
-    // {
-    // }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -47,7 +50,8 @@ class TransaksiController extends Controller
     public function create()
     {
         $title = 'Tambah Transaksi';
-        return view('transaksi.create', compact('title'));
+        $produk = Produk::where('jml', '>', '0')->get();
+        return view('transaksi.create', compact('title', 'produk'));
     }
 
     /**
@@ -58,14 +62,24 @@ class TransaksiController extends Controller
      */
     public function store(Request $request)
     {
+        $pid = $request->produk_id;
+        $harga = Produk::find($pid);
+        $rego = $harga->harga;
+        $total = $request->jml_beli * $rego;
+        $jujul = $request->bayar - ($request->jml_beli * $rego);
+
         $validator = Validator::make($request->all(), [
-            'kode_invoice' => 'required',
-            'nama' => 'required',
-            'no_hp' => 'required',
+            'kode_invoice' => 'required|max:20',
+            'nama' => 'required|max:100',
+            'no_hp' => 'required|max:20',
             'produk_id' => 'required',
-            'jml' => 'required',
-            'bayar' => 'required',
+            'jml_beli' => 'required|numeric',
+            // 'bayar' => 'required|numeric',
+            'bayar'        => 'required|numeric|min:' . $total . '|max:' . ($total + 100000),
             'ket' => 'required',
+        ], [
+            'bayar.min' => 'Pembayaran minimal ' . ($total) . '.',
+            'bayar.max' => 'Pembayaran terlalu besar ' . ($request->get('bayar')) . '.',
         ]);
         if (!$validator->passes()) {
             return response()->json([
@@ -75,9 +89,16 @@ class TransaksiController extends Controller
         }
 
         // $data = Transaksi::get();
-        $id = $request->produk_id;
-        $harga = Produk::find($id);
-        $rego = $harga->harga;
+
+        $saiki = $harga->jml;
+        $anyar = $saiki - $request->jml_beli;
+        $dituku = $harga->jml_keluar;
+        $jmlsaiki = $dituku + $request->jml_beli;
+        Produk::where('id', $pid)->update([
+            'jml' => $anyar,
+            'jml_keluar' => $jmlsaiki,
+        ]);
+        // $cek = Transaksi::where(''); sek
         $id = $request->id;
         Transaksi::updateOrCreate([
             'id' => $id,
@@ -87,12 +108,13 @@ class TransaksiController extends Controller
             'nama' => $request->nama,
             'no_hp' => $request->no_hp,
             'produk_id' => $request->produk_id,
-            'jml' => $request->jml,
+            'jml_beli' => $request->jml_beli,
             'bayar' => $request->bayar,
             'ket' => $request->ket,
-            'total' => $request->jml * $rego,
-            'kembalian' => $request->bayar - ($request->jml * $rego),
+            'total' => $total,
+            'kembalian' => $jujul,
         ]);
+
         return response()->json([
             'success' => true,
             'pesan' => 'Data Berhasil Ditambah',
@@ -142,5 +164,17 @@ class TransaksiController extends Controller
     public function destroy($id)
     {
         //
+    }
+    public function hitung(Request $request, $id)
+    {
+        $produk = Produk::where('id', $id)->pluck('harga', 'id');
+        return response()->json($produk);
+    }
+    public function print($id)
+    {
+        $tgl = date('d F Y');
+        $data = Transaksi::findOrFail($id);
+        $pdf = PDF::loadview('transaksi.invoice', compact('data', 'tgl'))->setPaper('a5', 'Potrait');
+        return $pdf->stream();
     }
 }

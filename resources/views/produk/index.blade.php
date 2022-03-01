@@ -23,6 +23,7 @@
                                     <th>Tgl Masuk</th>
                                     <th>Tgl Exp</th>
                                     <th>Jumlah</th>
+                                    <th>Harga</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -69,6 +70,9 @@
                 }, {
                     data: 'jumlah',
                     name: 'jumlah'
+                }, {
+                    data: 'harga',
+                    name: 'harga'
                 }, {
                     data: 'action',
                     name: 'action'

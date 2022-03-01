@@ -29,27 +29,34 @@
                                     placeholder="Masukkan No Hp">
                             </div>
                             <div class="form-group">
-                                <label>Produk</label>
-                                <select id="produk_id" name="produk_id" class="form-control select2"
-                                    style="width: 100%;">
-                                    <option value="">-- Pilih --</option>
-                                    @foreach ($produk as $item)
-                                        <option value="{{ $item->id }}">{{ $item->nama_produk }}</option>
-                                    @endforeach
-                                </select>
+                                <label for="jml_beli">Jumlah</label>
+                                <input type="text" name="jml_beli" id="jml_beli" class="form-control"
+                                    placeholder="Masukkan Jumlah">
                             </div>
+
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <label for="jml">Jumlah</label>
-                                <input type="text" name="jml" id="jml" class="form-control"
-                                    placeholder="Masukkan Jumlah">
+                                <label>Produk</label>
+                                <select name="produk_id" id="produk_id" data-width="100%" class="form-control">
+
+                                    <option value="">-- Pilih --</option>
+                                    @foreach ($produk as $item)
+                                        <option value="{{ $item->id }}">{{ $item->nama_produk }}
+                                            ({{ $item->satuan->nama_satuan }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="nama">Total</label>
+                                <input name="total" disabled id="total" class="form-control">
                             </div>
                             <div class="form-group">
                                 <label for="bayar">Bayar</label>
                                 <input type="text" name="bayar" id="bayar" class="form-control"
                                     placeholder="Masukkan Bayar">
                             </div>
+
                             <div class="form-group">
                                 <label for="ket">Keterangan</label>
                                 <input type="text" name="ket" id="ket" class="form-control"

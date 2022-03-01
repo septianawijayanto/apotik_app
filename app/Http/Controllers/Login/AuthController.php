@@ -13,7 +13,7 @@ class AuthController extends Controller
 {
     public function login()
     {
-        $title = 'Login SIAKAD';
+        $title = 'Login';
         return view('auth.login', compact('title'));
     }
     public function postlogin(Request $request)

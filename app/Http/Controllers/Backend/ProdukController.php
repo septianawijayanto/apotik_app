@@ -33,6 +33,8 @@ class ProdukController extends Controller
                     return $data->jenis->nama_jenis;
                 })->addColumn('jumlah', function ($data) {
                     return $data->jml . ' ' .  $data->satuan->nama_satuan;
+                })->addColumn('harga', function ($data) {
+                    return  'Rp. ' . number_format($data->harga);
                 })->addColumn('satuan', function ($data) {
                     return $data->satuan->nama_satuan;
                 })->rawColumns(['action', 'jenis', 'jumlah', 'satuan'])->make(true);

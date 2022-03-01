@@ -7,8 +7,8 @@
             <div class="card card-navy">
                 <div class="card-header">
                     {{-- <h3 class="card-title">Quick Example <small>jQuery Validation</small></h3> --}}
-                    <a href="{{ route('transaksi.create') }}" class="btn btn-warning btn-sm"><i
-                            class="fa fa-plus-circle"></i></a>
+                    {{-- <a href="{{ route('transaksi.create') }}" class="btn btn-warning btn-sm"><i
+                            class="fa fa-plus-circle"></i></a> --}}
                     <button class="btn btn-primary btn-sm" id="btn-tambah"><i class="fa fa-plus-circle"></i></button>
 
                 </div>
@@ -26,6 +26,7 @@
                                     <th>Jml Beli</th>
                                     <th>Total</th>
                                     <th>Bayar</th>
+                                    <th>Kembalian</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -44,6 +45,11 @@
 @section('scripts')
     <script>
         $(document).ready(function() {
+            $('#produk_id').select2({
+                dropdownParent: ('#modal-tambah-edit'),
+                theme: 'bootstrap4'
+
+            });
             $('#tabel-transaksi').DataTable({
                 processing: true,
                 serverSide: true,
@@ -64,14 +70,17 @@
                     data: 'nama',
                     name: 'nama'
                 }, {
-                    data: 'jml',
-                    name: 'jml'
+                    data: 'jml_beli',
+                    name: 'jml_beli'
                 }, {
                     data: 'total',
                     name: 'total'
                 }, {
                     data: 'bayar',
                     name: 'bayar'
+                }, {
+                    data: 'kembalian',
+                    name: 'kembalian'
                 }, {
                     data: 'action',
                     name: 'action'
@@ -86,6 +95,36 @@
                     'X_CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+
+            $("#produk_id").on('change', function() {
+                var produk_id = $(this).val();
+                var jml_beli = $("#jml_beli").val();
+                if (produk_id) {
+                    $.ajax({
+                        type: "GET",
+                        url: "produk/hitung/" + produk_id,
+                        data: {
+                            id: $(this).val()
+
+                        },
+                        dataType: "JSON",
+                        success: function(data) {
+                            if (data) {
+                                $('#total').empty();
+                                $.each(data, function(id, harga) {
+                                    $('#total').val(harga * jml_beli, id)
+                                });
+
+                            } else {
+                                $('#total').empty();
+                            }
+                        }
+                    });
+                } else {
+                    $('#total').empty()
+                }
+            });
+
 
             //Ketika Tombol Tambah Di Klik
             $('#btn-tambah').click(function(e) {
@@ -190,7 +229,8 @@
                 })
             });
         });
-
+        $('#litransaksi').addClass('menu-open');
+        $('#menutransaksi').addClass('active');
         $('#transaksi').addClass('active');
     </script>
 @endsection

@@ -18,4 +18,8 @@ class Transaksi extends Model
     {
         return $this->belongsTo(Produk::class);
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
